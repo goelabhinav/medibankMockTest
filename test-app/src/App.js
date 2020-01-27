@@ -13,41 +13,54 @@ class App extends Component {
   componentDidMount(){
     const url="https://gist.githubusercontent.com/medibank-digital/a1fc81a93200a7b9d5f8b7eae0fac6f8/raw/de10a4fcf717e6c431e88c965072c784808fd6b2/people.json";
     fetch(url)
-    .then(res=> res.json())
-    .then(json => { 
+    .then(res => res.json())
+    .then(json => {
+      //debugger;
       this.setState({
         items    :   json,
         isLoaded :   true,
       })
     });
-    
+   
   }
 
+  filterCats = () =>{
+    var maleCats = [];
+    var femaleCats = [];
+    this.state.items.map((person)=>{
+      person.pets && person.pets.map((pet)=>{
+        if(pet.type == "Cat"){
+            if(person.gender == "Male")
+                maleCats.push(pet.name);
+            else
+                femaleCats.push(pet.name);
+        }
+      });
+    });
+    return ({maleCats, femaleCats});
+  }
 
-   render(){
+  renderCats = (filteredCats) =>{
+    return filteredCats.sort().map((cat)=>{
+      return(<li>{cat}</li>);
+    });
+  }
+
+  render(){
     var {isLoaded, items} = this.state;
     if(!isLoaded){
       return <div>Loading...</div>
     }
     else{
+      var filteredCats = this.filterCats();
       return (
-      <div>
-          <b>MALE</b>
-          <ul>
-          {items.filter((e)=> e.gender === "Male" && e.pets != null).
-          map((item)=>(item.pets.filter(e=>e.type ==="Cat").
-          map(e=>(e.name))).sort().join("  ")).sort().join(" \n")}
-          </ul>
-
-
-
-             <b>Male</b> 
-         {items.filter((e)=> e.gender === "Male" && e.pets != null).map((ee, index) => {
-          return <p>{ee.pets.filter(e=>e.type ==="Cat").map((e)=> {
-            return <li>{e.name}</li>
-          })}</p>
-         })}
-      </div>   
+        <div>
+        <p> Male </p>
+          {this.renderCats(filteredCats.maleCats)}
+        <p> Female</p>
+          {this.renderCats(filteredCats.femaleCats)}
+         
+        </div>
       )
     }
 
